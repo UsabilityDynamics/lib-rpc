@@ -1,0 +1,46 @@
+{
+  "name": "usabilitydynamics/wp-xmlrpc",
+  "type": "library",
+  "version": "0.0.1",
+  "description": "The best project ever.",
+  "require": {},
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "http://udx.io"
+    }
+  ],
+  "minimum-stability": "dev",
+  "homepage": "http://github.com/UsabilityDynamics/lib-wp-xmlrpc",
+  "autoload": {
+    "files": [
+      "lib/wp-xmlrpc.php"
+    ]
+  },
+  "extra": {
+    "component": {
+      "name": "usabilitydynamics/lib-wp-xmlrpc",
+      "version": "0.0.1",
+      "description": "The best project ever.",
+      "homepage": "http://github.com/UsabilityDynamics/lib-wp-xmlrpc",
+      "dependencies": {},
+      "scripts": [
+        "./scripts"
+      ],
+      "templates": [
+        "./templates"
+      ],
+      "styles": [
+        "./styles"
+      ],
+      "files": [
+        "./lib"
+      ],
+      "license": "MIT"
+    }
+  },
+  "support": {
+    "issues": "http://github.com/UsabilityDynamics/lib-wp-xmlrpc/issues"
+  },
+  "license": "MIT"
+}
