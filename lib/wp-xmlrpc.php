@@ -1,30 +1,66 @@
 <?php
 
 /**
- *
+ * UD XML-RPC Library
  */
-
 namespace UsabilityDynamics {
 
   /**
-   *
+   * Standard IXR
+   */
+  include_once( ABSPATH . WPINC . '/class-IXR.php' );
+
+  /**
+   * UD IXR extended from standard
+   * @author korotkov@ud
+   */
+  class UD_IXR_Client extends \IXR_Client {
+
+    /**
+     * Construct
+     * @param type $server
+     * @param type $path
+     * @param type $port
+     * @param type $timeout
+     * @author korotkov@ud
+     */
+    function __construct($server, $path = false, $port = 80, $timeout = 15) {
+      parent::__construct( $server, $path, $port, $timeout );
+
+      /**
+       * Custom useragent
+       */
+      $this->useragent = 'UD XML-RPC Client';
+
+      /**
+       * Custom headers
+       */
+      $this->headers = array();
+
+    }
+
+  }
+
+  /**
+   * Base XML-RPC handler
+   * @author korotkov@ud
    */
   abstract class XMLRPC {
 
     /**
-     *
+     * Available calls
      * @var type
      */
     protected $calls = Array();
 
     /**
-     *
+     * Current methods' namespace
      * @var type
      */
     protected $namespace;
 
     /**
-     *
+     * Construct
      * @param type $namespace
      */
     function __construct($namespace = 'ud') {
@@ -43,7 +79,7 @@ namespace UsabilityDynamics {
     }
 
     /**
-     *
+     * Register methods
      * @param type $methods
      * @return array
      */
@@ -55,17 +91,18 @@ namespace UsabilityDynamics {
     }
 
     /**
-     *
+     * Call methods (__call similar)
      * @global type $wp_xmlrpc_server
      * @param type $args
      * @return string
      */
-    public function dispatch( $args ) {
+    public function dispatch($args) {
 
       $call = $this->get_called_method();
 
-      if ( method_exists( $this, $call ) ) {
-        $status = call_user_func_array( array( $this, $call ), $args );
+      if (method_exists($this, $call)) {
+        $status = call_user_func_array(array($this, $call), $args);
+
         return $status;
       } else {
         return "Method not allowed";
@@ -73,7 +110,7 @@ namespace UsabilityDynamics {
     }
 
     /**
-     *
+     * Get method that was actually called to find it in child class
      * @global $wp_xmlrpc_server
      * @return type
      */
@@ -90,6 +127,7 @@ namespace UsabilityDynamics {
 
   /**
    * UD XML-RPC Server Library
+   * @author korotkov@ud
    */
   class UD_XMLRPC extends XMLRPC {
 
@@ -144,8 +182,8 @@ namespace UsabilityDynamics {
      * @param type $last_name
      * @return type
      */
-    public function say_hello( $first_name, $last_name ) {
-      return 'Hello '. $first_name . ' ' . $last_name;
+    public function say_hello($first_name, $last_name) {
+      return 'Hello ' . $first_name . ' ' . $last_name;
     }
 
   }
