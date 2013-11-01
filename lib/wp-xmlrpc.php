@@ -21,19 +21,19 @@ namespace UsabilityDynamics {
      *
      * @var type
      */
-    protected $namespace = "ud";
+    protected $namespace;
 
     /**
      *
      * @param type $namespace
      */
-    function __construct($namespace) {
+    function __construct($namespace = 'ud') {
 
       $this->namespace = $namespace;
 
-      $reflector = new ReflectionClass($this);
+      $reflector = new \ReflectionClass($this);
 
-      foreach ($reflector->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+      foreach ($reflector->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
         if ($method->isUserDefined() && $method->getDeclaringClass()->name != get_class()) {
           $this->calls[] = $method->name;
         }
