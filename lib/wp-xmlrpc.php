@@ -93,15 +93,60 @@ namespace UsabilityDynamics {
    */
   class UD_XMLRPC extends XMLRPC {
 
-    public function _ping() {
+    /**
+     *
+     *
+     * Example call:
+     *
+     * <?php
+     *
+     * include_once( ABSPATH . WPINC . '/class-IXR.php' );
+     * include_once( ABSPATH . WPINC . '/class-wp-http-ixr-client.php' );
+
+     * $client = new WP_HTTP_IXR_CLIENT( 'http://domain.name/xmlrpc.php' );
+
+     * $client->query( 'ud.ping', array() );
+
+     * echo '<pre>';
+     * print_r( $client->getResponse() );
+     * echo '</pre>';
+     *
+     * ?>
+     *
+     *
+     * @return type
+     */
+    public function ping() {
       return $_SERVER;
     }
 
-    public function _validate_domain() {}
+    /**
+     *
+     *
+     * Example call:
+     *
+     * <?php
+     *
+     * include_once( ABSPATH . WPINC . '/class-IXR.php' );
+     * include_once( ABSPATH . WPINC . '/class-wp-http-ixr-client.php' );
 
-    public function _validate_ip() {}
+     * $client = new WP_HTTP_IXR_CLIENT( 'http://domain.name/xmlrpc.php' );
 
-    public function _generate_api_key() {}
+     * $client->query( 'ud.say_hello', array('John', 'Smith') );
+
+     * echo '<pre>';
+     * print_r( $client->getResponse() );
+     * echo '</pre>';
+     *
+     * ?>
+     *
+     * @param type $first_name
+     * @param type $last_name
+     * @return type
+     */
+    public function say_hello( $first_name, $last_name ) {
+      return 'Hello '. $first_name . ' ' . $last_name;
+    }
 
   }
 
