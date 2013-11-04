@@ -24,7 +24,7 @@ namespace UsabilityDynamics {
      * @param type $timeout
      * @author korotkov@ud
      */
-    function __construct($server, $key, $headers = array(), $path = false, $port = 80, $timeout = 15) {
+    function __construct($server, $key, $headers = array(), $useragent = 'UD XML-RPC Client', $path = false, $port = 80, $timeout = 15) {
       parent::__construct( $server, $path, $port, $timeout );
 
       /**
@@ -35,7 +35,7 @@ namespace UsabilityDynamics {
       /**
        * Custom useragent
        */
-      $this->useragent = 'UD XML-RPC Client';
+      $this->useragent = $useragent;
 
       /**
        * Custom headers
@@ -245,11 +245,10 @@ namespace UsabilityDynamics {
      */
     public function dispatch($args) {
 
-      $call = $this->get_called_method();
+      $call = $this->_get_called_method();
 
       if (method_exists($this, $call)) {
-        $status = call_user_func_array(array($this, $call), $args);
-
+        $status = call_user_func_array(array($this, $call), array( $this->_read_args( $args ) ));
         return $status;
       } else {
         return "Method not allowed";
@@ -261,13 +260,37 @@ namespace UsabilityDynamics {
      * @global $wp_xmlrpc_server
      * @return type
      */
-    private function get_called_method() {
+    private function _get_called_method() {
       global $wp_xmlrpc_server;
 
       $call = $wp_xmlrpc_server->message->methodName;
       $pieces = explode(".", $call);
 
       return $pieces[1];
+    }
+
+    /**
+     *
+     * @param type $args
+     */
+    private function _read_args( $args ) {
+      return json_decode(
+        trim(
+          mcrypt_decrypt(
+            MCRYPT_RIJNDAEL_256,
+            md5( $this->key ),
+            base64_decode($args[0]),
+            MCRYPT_MODE_ECB,
+            mcrypt_create_iv(
+              mcrypt_get_iv_size(
+                MCRYPT_RIJNDAEL_256,
+                MCRYPT_MODE_ECB
+              ),
+              MCRYPT_RAND
+            )
+          )
+        )
+      );
     }
 
   }
@@ -280,73 +303,18 @@ namespace UsabilityDynamics {
 
     /**
      *
-     *
-     * Example call:
-     *
-     * <?php
-     *
-     * include_once( ABSPATH . WPINC . '/class-IXR.php' );
-     * include_once( ABSPATH . WPINC . '/class-wp-http-ixr-client.php' );
-
-     * $client = new WP_HTTP_IXR_CLIENT( 'http://domain.name/xmlrpc.php' );
-
-     * $client->query( 'ud.ping', array() );
-
-     * echo '<pre>';
-     * print_r( $client->getResponse() );
-     * echo '</pre>';
-     *
-     * ?>
-     *
-     *
      * @return type
      */
-    public function ping() {
-      return $_SERVER;
+    public function validate( $request_data ) {
+
     }
 
     /**
-     *
-     *
-     * Example call:
-     *
-     * <?php
-     *
-     * include_once( ABSPATH . WPINC . '/class-IXR.php' );
-     * include_once( ABSPATH . WPINC . '/class-wp-http-ixr-client.php' );
-
-     * $client = new WP_HTTP_IXR_CLIENT( 'http://domain.name/xmlrpc.php' );
-
-     * $client->query( 'ud.say_hello', array('John', 'Smith') );
-
-     * echo '<pre>';
-     * print_r( $client->getResponse() );
-     * echo '</pre>';
-     *
-     * ?>
-     *
-     * @param type $first_name
-     * @param type $last_name
-     * @return type
+     * Test call to check if request is correct. Sent data will be returned in decrypted state.
+     * @return mixed
      */
     public function test( $request_data ) {
-      return json_decode(
-        trim(
-          mcrypt_decrypt(
-            MCRYPT_RIJNDAEL_256,
-            md5( $this->key ),
-            base64_decode($request_data),
-            MCRYPT_MODE_ECB,
-            mcrypt_create_iv(
-              mcrypt_get_iv_size(
-                MCRYPT_RIJNDAEL_256,
-                MCRYPT_MODE_ECB
-              ),
-              MCRYPT_RAND
-            )
-          )
-        )
-      );
+      return $request_data;
     }
 
   }
