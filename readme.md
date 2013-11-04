@@ -7,7 +7,7 @@ XML-RPC Library that allows user sites to communicate with UD Services.
 ```php
 require_once PATH_TO_LIB.'/lib/wp-xmlrpc.php';
 use UsabilityDynamics\UD_XMLRPC;
-new UD_XMLRPC();
+new UD_XMLRPC('encription key string');
 ```
 
 ## Sending Requests
@@ -15,12 +15,12 @@ new UD_XMLRPC();
 ```php
 require_once PATH_TO_LIB.'/lib/wp-xmlrpc.php';
 use UsabilityDynamics\UD_IXR_Client;
-$client = new UD_IXR_Client( 'http://domain.name/xmlrpc.php' );
-$client->query( 'ud.ping', array() );
+$client = new UD_IXR_Client( 'http://domain.name/xmlrpc.php', 'encription key string' );
+$client->query( 'ud.test', array('arg1', 'arg2', 'argX') );
 $result = $client->getResponse();
 ```
 
 ## Currently available methods
 
-* ud.ping
-* ud.say_hello(first_name, last_name)
+* ud.ping()
+* ud.test(...)
