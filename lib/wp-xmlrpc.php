@@ -65,7 +65,7 @@ namespace UsabilityDynamics {
       }
 
       /**
-       *
+       * Send a query to server
        * @return boolean
        */
       function query() {
@@ -85,23 +85,7 @@ namespace UsabilityDynamics {
          */
         $secure_args = array(
           array(
-            trim(
-              base64_encode(
-                mcrypt_encrypt(
-                  MCRYPT_RIJNDAEL_256,
-                  md5( $this->ecryption_key ),
-                  json_encode( $args[0] ),
-                  MCRYPT_MODE_ECB,
-                  mcrypt_create_iv(
-                    mcrypt_get_iv_size(
-                      MCRYPT_RIJNDAEL_256,
-                      MCRYPT_MODE_ECB
-                    ),
-                    MCRYPT_RAND
-                  )
-                )
-              )
-            )
+            $this->_hash_args($args[0])
           )
         );
 
@@ -174,7 +158,7 @@ namespace UsabilityDynamics {
          * Now parse what we've got back
          */
         $this->message = new \IXR_Message($contents);
-        if (!$this->message->parse()) {
+        if ( !$this->message->parse() ) {
           /**
            * XML is bad
            */
@@ -191,6 +175,31 @@ namespace UsabilityDynamics {
         }
 
         return true;
+      }
+
+      /**
+       * Secure arguments
+       * @param type $args
+       * @return type
+       */
+      private function _hash_args( $args ) {
+        return trim(
+          base64_encode(
+            mcrypt_encrypt(
+              MCRYPT_RIJNDAEL_256,
+              md5( $this->ecryption_key ),
+              json_encode( $args ),
+              MCRYPT_MODE_ECB,
+              mcrypt_create_iv(
+                mcrypt_get_iv_size(
+                  MCRYPT_RIJNDAEL_256,
+                  MCRYPT_MODE_ECB
+                ),
+                MCRYPT_RAND
+              )
+            )
+          )
+        );
       }
 
     }
@@ -214,20 +223,26 @@ namespace UsabilityDynamics {
       protected $namespace;
 
       /**
-       * Encryption key
+       * Secret key
        * @var type
        */
-      public $key;
+      public $secret_key;
+
+      /**
+       * Public Key
+       * @var type
+       */
+      public $public_key;
 
       /**
        * Construct
        * @param type $namespace
        */
-      function __construct($key, $namespace = 'ud') {
+      function __construct( $secret_key, $public_key, $namespace = 'ud' ) {
 
-        $this->namespace = $namespace;
-
-        $this->key = $key;
+        $this->namespace  = $namespace;
+        $this->secret_key = $secret_key;
+        $this->public_key = $public_key;
 
         $reflector = new \ReflectionClass($this);
 
@@ -263,8 +278,12 @@ namespace UsabilityDynamics {
         $call = $this->_get_called_method();
 
         if (method_exists($this, $call)) {
-          $status = call_user_func_array(array($this, $call), array( $this->_read_args( $args ) ));
-          return $status;
+          if ( $this->_read_args( $args ) ) {
+            $status = call_user_func_array(array($this, $call), array( $args ));
+            return $status;
+          } else {
+            return "Unauthorized";
+          }
         } else {
           return "Method not allowed";
         }
@@ -285,15 +304,15 @@ namespace UsabilityDynamics {
       }
 
       /**
-       *
+       * Decrypt args
        * @param type $args
        */
-      private function _read_args( $args ) {
-        return json_decode(
+      private function _read_args( &$args ) {
+        $args = json_decode(
           trim(
             mcrypt_decrypt(
               MCRYPT_RIJNDAEL_256,
-              md5( $this->key ),
+              md5( $this->secret_key ),
               base64_decode($args[0]),
               MCRYPT_MODE_ECB,
               mcrypt_create_iv(
@@ -306,22 +325,28 @@ namespace UsabilityDynamics {
             )
           )
         );
+        if ( is_array( $args ) && !empty( $args ) ) {
+          return true;
+        }
+        return false;
       }
-
     }
 
     /**
-     * UD XML-RPC Server Library
+     * UD XML-RPC Server Library. May be extended with a class with public methods.
      * @author korotkov@ud
      */
     class UD_XMLRPC extends XMLRPC {
 
       /**
+       * Validate all incoming requests using callback to this method.
        *
-       * @return type
+       * @param md5 string $request_data
+       * @return boolean
        */
       public function validate( $request_data ) {
-
+        if ( md5( $_SERVER['HTTP_HOST'].$this->public_key.$this->secret_key ) == $request_data[0] ) { return true; }
+        return false;
       }
 
       /**
