@@ -222,7 +222,7 @@ namespace UsabilityDynamics {
          * Available calls
          * @var type
          */
-        protected $calls = Array();
+        private $calls = Array();
 
         /**
          * Current methods' namespace
@@ -231,16 +231,22 @@ namespace UsabilityDynamics {
         protected $namespace;
 
         /**
+         *
+         * @var type
+         */
+        protected $default_namespace = 'ud';
+
+        /**
          * Secret key
          * @var type
          */
-        public $secret_key;
+        protected $secret_key;
 
         /**
          * Public Key
          * @var type
          */
-        public $public_key;
+        protected $public_key;
 
         /**
          * Construct
@@ -256,7 +262,7 @@ namespace UsabilityDynamics {
 
           foreach ($reflector->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
             if ($method->isUserDefined() && $method->getDeclaringClass()->name != get_class()) {
-              $this->calls[] = $method->name;
+              $this->calls[] = $method;
             }
           }
 
@@ -270,7 +276,8 @@ namespace UsabilityDynamics {
          */
         public function xmlrpc_methods($methods) {
           foreach ($this->calls as $call) {
-            $methods[$this->namespace . "." . $call] = array($this, "dispatch");
+            $namespace = $call->getDeclaringClass()->name != 'UsabilityDynamics\UD_XMLRPC' ? $this->namespace : $this->default_namespace;
+            $methods[$namespace . "." . $call->name] = array($this, "dispatch");
           }
           return $methods;
         }
@@ -390,7 +397,7 @@ namespace UsabilityDynamics {
           /**
            * @todo: implement
            */
-          return true;
+          return $this->namespace;
         }
 
         /**
@@ -401,7 +408,7 @@ namespace UsabilityDynamics {
           /**
            * @todo: implement
            */
-          return true;
+          return $this->namespace;
         }
 
         /**
@@ -412,7 +419,7 @@ namespace UsabilityDynamics {
           /**
            * @todo: implement
            */
-          return true;
+          return $this->namespace;
         }
 
       }
