@@ -7,7 +7,7 @@ XML-RPC Library that allows user sites to communicate with UD Services.
 ```php
 require_once PATH_TO_LIB.'/lib/wp-xmlrpc.php';
 use UsabilityDynamics\UD_XMLRPC;
-new UD_XMLRPC('encription key string');
+new UD_XMLRPC( 'secret key', 'public key' );
 ```
 
 ## Sending Requests
