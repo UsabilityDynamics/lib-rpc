@@ -359,6 +359,46 @@ namespace UsabilityDynamics {
 
     }
 
+    /**
+     * WP UD Products should initialize this server to listen for incoming commands connected to premium features management
+     */
+    class UD_PRODUCTS_XMLRPC extends UD_XMLRPC {
+
+      /**
+       * Add Premium Feature to the client's site
+       * @param type $request_data
+       */
+      public function add_feature( $request_data ) {
+        /**
+         * @todo: implement
+         */
+        return true;
+      }
+
+      /**
+       *
+       * @param type $request_data
+       */
+      public function update_feature( $request_data ) {
+        /**
+         * @todo: implement
+         */
+        return true;
+      }
+
+      /**
+       *
+       * @param type $request_data
+       */
+      public function remove_feature( $request_data ) {
+        /**
+         * @todo: implement
+         */
+        return true;
+      }
+
+    }
+
   }
 
 }
