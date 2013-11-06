@@ -376,7 +376,7 @@ namespace UsabilityDynamics {
       }
 
       /**
-       *
+       * Update Premium Feature on client's site
        * @param type $request_data
        */
       public function update_feature( $request_data ) {
@@ -387,10 +387,10 @@ namespace UsabilityDynamics {
       }
 
       /**
-       *
+       * Delete Premium Feature from client's site
        * @param type $request_data
        */
-      public function remove_feature( $request_data ) {
+      public function delete_feature( $request_data ) {
         /**
          * @todo: implement
          */

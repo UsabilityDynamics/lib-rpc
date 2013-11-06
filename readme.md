@@ -22,5 +22,13 @@ $result = $client->getResponse();
 
 ## Currently available methods
 
+###Utils
+
 * ud.validate( string ) - Validate requests using this function as a callback. Argument is md5 string of host+public_key+secret_key.
 * ud.test(...)
+
+###Products
+
+* add_feature
+* update_feature
+* delete_feature
