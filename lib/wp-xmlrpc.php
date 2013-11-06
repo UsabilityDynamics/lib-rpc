@@ -249,6 +249,12 @@ namespace UsabilityDynamics {
         protected $public_key;
 
         /**
+         *
+         * @var type
+         */
+        public $ui;
+
+        /**
          * Construct
          * @param type $namespace
          */
@@ -257,6 +263,8 @@ namespace UsabilityDynamics {
           $this->namespace  = $namespace;
           $this->secret_key = $secret_key;
           $this->public_key = $public_key;
+
+          $this->ui         = new UI( $this->namespace );
 
           $reflector = new \ReflectionClass($this);
 
@@ -383,7 +391,7 @@ namespace UsabilityDynamics {
     /**
      * Prevent class redeclaration
      */
-    if ( !class_exists('UD_PRODUCTS_XMLRPC') ) {
+    if ( !class_exists('UsabilityDynamics\UD_PRODUCTS_XMLRPC') ) {
       /**
        * WP UD Products should initialize this server to listen for incoming commands connected to premium features management
        */
@@ -422,6 +430,79 @@ namespace UsabilityDynamics {
           return $this->namespace;
         }
 
+      }
+    }
+
+    /**
+     * Prevent class redeclaration
+     */
+    if ( !class_exists('UsabilityDynamics\UI') ) {
+      /**
+       * Class that is responsible for API UI
+       */
+      class UI {
+
+        /**
+         * Namespace similar to UD_XMLRPC namespace
+         * @var type
+         */
+        private $namespace;
+
+        /**
+         * Construct
+         * @param type $namespace
+         */
+        function __construct( $namespace ) {
+          $this->namespace = $namespace;
+        }
+
+        /**
+         * Use this for rendering API Keys fields anywhere.
+         * @param type $args
+         * @return type
+         */
+        function render_api_fields( $args = array() ) {
+
+          $defaults = array(
+              'return' => false,
+              'input_class' => 'ud_api_input',
+              'container' => 'div',
+              'container_class' => 'ud_api_credentials',
+              'input_wrapper' => 'div',
+              'input_wrapper_class' => 'ud_api_field',
+              'secret_key_label' => 'Secret Key',
+              'public_key_label' => 'Public Key',
+              'before' => '',
+              'after' => ''
+          );
+
+          extract( wp_parse_args($args, $defaults) );
+
+          ob_start();
+          echo $before;
+          ?>
+
+          <<?php echo $container; ?> class="<?php echo $container_class; ?>">
+
+            <<?php echo $input_wrapper; ?> class="<?php echo $input_wrapper_class; ?>">
+              <label for="<?php echo $this->namespace ?>_api_secret_key"><?php echo $secret_key_label; ?></label>
+              <input id="<?php echo $this->namespace ?>_api_secret_key" value="<?php echo get_option( $this->namespace.'_api_secret_key', '' ); ?>" name="<?php echo $this->namespace ?>_api_secret_key" />
+            </<?php echo $input_wrapper; ?>>
+
+            <<?php echo $input_wrapper; ?> class="<?php echo $input_wrapper_class; ?>">
+              <label for="<?php echo $this->namespace ?>_api_public_key"><?php echo $public_key_label; ?></label>
+              <input id="<?php echo $this->namespace ?>_api_public_key" value="<?php echo get_option( $this->namespace.'_api_public_key', '' ); ?>" name="<?php echo $this->namespace ?>_api_public_key" />
+            </<?php echo $input_wrapper; ?>>
+
+          </<?php echo $container; ?>>
+
+          <?php
+          echo $after;
+          $html = apply_filters( $this->namespace.'_ud_api_ui', ob_get_clean() );
+
+          if ( $return ) return $html;
+          echo $html;
+        }
       }
     }
   }
