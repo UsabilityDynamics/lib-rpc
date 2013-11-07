@@ -7,7 +7,8 @@ XML-RPC Library that allows user sites to communicate with UD Services.
 ```php
 require_once PATH_TO_LIB.'/lib/wp-xmlrpc.php';
 use UsabilityDynamics\UD_XMLRPC;
-new UD_XMLRPC( 'secret key', 'public key' );
+global $ud_xml_server;
+$ud_xml_server = new UD_XMLRPC( 'secret key', 'public key' );
 ```
 
 ## Sending Requests
@@ -15,9 +16,16 @@ new UD_XMLRPC( 'secret key', 'public key' );
 ```php
 require_once PATH_TO_LIB.'/lib/wp-xmlrpc.php';
 use UsabilityDynamics\UD_IXR_Client;
-$client = new UD_IXR_Client( 'http://wpi.loc/xmlrpc.php', 'secret key', 'public key', 'WordPress 3.7.1; WP-Invoice 3.09.1;' );
+$client = new UD_IXR_Client( 'http://domain.com/xmlrpc.php', 'secret key', 'public key', 'WordPress 3.7.1; WP-Invoice 3.09.1;' );
 $client->query( 'ud.test', array('arg1', 'arg2', 'argX') );
 $result = $client->getResponse();
+```
+
+## Rendering API Keys UI
+
+```php
+global $ud_xml_server;
+$ud_xml_server->ui->render_api_fields();
 ```
 
 ## Currently available methods
@@ -29,6 +37,6 @@ $result = $client->getResponse();
 
 ###Products
 
-* add_feature
-* update_feature
-* delete_feature
+* {namespace}.add_feature
+* {namespace}.update_feature
+* {namespace}.delete_feature
