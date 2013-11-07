@@ -34,6 +34,8 @@ namespace UsabilityDynamics {
          * @author korotkov@ud
          */
         function __construct($server, $secret_key, $public_key, $useragent = 'UD XML-RPC Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false) {
+          if ( empty( $secret_key ) || empty( $public_key ) ) return false;
+
           parent::__construct( $server, $path, $port, $timeout );
 
           /**
@@ -259,12 +261,13 @@ namespace UsabilityDynamics {
          * @param type $namespace
          */
         function __construct( $secret_key, $public_key, $namespace = 'ud' ) {
+          $this->ui         = new UI( $namespace );
+
+          if ( empty( $secret_key ) || empty( $public_key ) ) return false;
 
           $this->namespace  = $namespace;
           $this->secret_key = $secret_key;
           $this->public_key = $public_key;
-
-          $this->ui         = new UI( $this->namespace );
 
           $reflector = new \ReflectionClass($this);
 
@@ -454,6 +457,8 @@ namespace UsabilityDynamics {
          */
         function __construct( $namespace ) {
           $this->namespace = $namespace;
+
+          add_action('wp_ajax_ud_api_save_keys', array( $this, 'ud_api_save_keys' ));
         }
 
         /**
@@ -462,6 +467,8 @@ namespace UsabilityDynamics {
          * @return type
          */
         function render_api_fields( $args = array() ) {
+
+          wp_enqueue_script('jquery');
 
           $defaults = array(
               'return' => false,
@@ -482,17 +489,46 @@ namespace UsabilityDynamics {
           echo $before;
           ?>
 
-          <<?php echo $container; ?> class="<?php echo $container_class; ?>">
+          <script type="text/javascript">
+            jQuery(document).ready(function(){
+              jQuery('.up_api_keys .ud_api_keys_save').on('click', function(e){
+                jQuery('.up_api_keys .ud_api_message').empty();
+                
+                var data = {
+                  action: 'ud_api_save_keys',
+                  <?php echo $this->namespace ?>_api_public_key: jQuery('[name="<?php echo $this->namespace ?>_api_public_key"]').val(),
+                  <?php echo $this->namespace ?>_api_secret_key: jQuery('[name="<?php echo $this->namespace ?>_api_secret_key"]').val()
+                };
 
-            <<?php echo $input_wrapper; ?> class="<?php echo $input_wrapper_class; ?>">
-              <label for="<?php echo $this->namespace ?>_api_secret_key"><?php echo $secret_key_label; ?></label>
-              <input id="<?php echo $this->namespace ?>_api_secret_key" value="<?php echo get_option( $this->namespace.'_api_secret_key', '' ); ?>" name="<?php echo $this->namespace ?>_api_secret_key" />
-            </<?php echo $input_wrapper; ?>>
+                jQuery.ajax(ajaxurl, {
+                  dataType: 'json',
+                  type: 'post',
+                  data: data,
+                  success: function(data) {
+                    jQuery.each(data.message, function(key, value){
+                      jQuery('.up_api_keys .ud_api_message').append('<p>'+value+'</p>');
+                    });
+                  }
+                });
+              });
+            });
+          </script>
 
-            <<?php echo $input_wrapper; ?> class="<?php echo $input_wrapper_class; ?>">
-              <label for="<?php echo $this->namespace ?>_api_public_key"><?php echo $public_key_label; ?></label>
-              <input id="<?php echo $this->namespace ?>_api_public_key" value="<?php echo get_option( $this->namespace.'_api_public_key', '' ); ?>" name="<?php echo $this->namespace ?>_api_public_key" />
-            </<?php echo $input_wrapper; ?>>
+          <<?php echo $container; ?> class="<?php echo $container_class; ?> up_api_keys">
+
+              <<?php echo $input_wrapper; ?> class="<?php echo $input_wrapper_class; ?>">
+                <label for="<?php echo $this->namespace ?>_api_secret_key"><?php echo $secret_key_label; ?></label>
+                <input id="<?php echo $this->namespace ?>_api_secret_key" value="<?php echo get_option( $this->namespace.'_api_secret_key', '' ); ?>" name="<?php echo $this->namespace ?>_api_secret_key" />
+              </<?php echo $input_wrapper; ?>>
+
+              <<?php echo $input_wrapper; ?> class="<?php echo $input_wrapper_class; ?>">
+                <label for="<?php echo $this->namespace ?>_api_public_key"><?php echo $public_key_label; ?></label>
+                <input id="<?php echo $this->namespace ?>_api_public_key" value="<?php echo get_option( $this->namespace.'_api_public_key', '' ); ?>" name="<?php echo $this->namespace ?>_api_public_key" />
+              </<?php echo $input_wrapper; ?>>
+
+              <input class="ud_api_keys_save" type="button" value="Save" />
+
+            <span class="ud_api_message"></span>
 
           </<?php echo $container; ?>>
 
@@ -502,6 +538,32 @@ namespace UsabilityDynamics {
 
           if ( $return ) return $html;
           echo $html;
+        }
+
+        /**
+         * Save API keys
+         */
+        function ud_api_save_keys() {
+          $result = array();
+          $success = false;
+
+          if ( update_option( $this->namespace.'_api_public_key', $_POST[$this->namespace.'_api_public_key'] ) ) {
+            $result[] = 'Public Key has been updated.';
+            $success = true;
+          }
+          if ( update_option( $this->namespace.'_api_secret_key', $_POST[$this->namespace.'_api_secret_key'] ) ) {
+            $result[] = 'Secret Key has been updated.';
+            $success = true;
+          }
+
+          if ( empty( $result ) ) {
+            $result[] = 'Nothing has been updated.';
+          }
+
+          die( json_encode( array(
+              'success' => $success,
+              'message' => $result
+          ) ) );
         }
       }
     }
