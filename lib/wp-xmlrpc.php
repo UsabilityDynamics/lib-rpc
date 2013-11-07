@@ -458,7 +458,7 @@ namespace UsabilityDynamics {
         function __construct( $namespace ) {
           $this->namespace = $namespace;
 
-          add_action('wp_ajax_ud_api_save_keys', array( $this, 'ud_api_save_keys' ));
+          add_action('wp_ajax_'.$namespace.'_ud_api_save_keys', array( $this, 'ud_api_save_keys' ));
         }
 
         /**
@@ -493,9 +493,9 @@ namespace UsabilityDynamics {
             jQuery(document).ready(function(){
               jQuery('.up_api_keys .ud_api_keys_save').on('click', function(e){
                 jQuery('.up_api_keys .ud_api_message').empty();
-                
+
                 var data = {
-                  action: 'ud_api_save_keys',
+                  action: '<?php echo $this->namespace ?>_ud_api_save_keys',
                   <?php echo $this->namespace ?>_api_public_key: jQuery('[name="<?php echo $this->namespace ?>_api_public_key"]').val(),
                   <?php echo $this->namespace ?>_api_secret_key: jQuery('[name="<?php echo $this->namespace ?>_api_secret_key"]').val()
                 };
