@@ -207,23 +207,24 @@ namespace UsabilityDynamics {
          * @return type
          */
         private function _hash_args( $args ) {
-          return trim(
-            base64_encode(
-              mcrypt_encrypt(
-                MCRYPT_RIJNDAEL_256,
-                md5( $this->ecryption_key ),
-                json_encode( $args ),
-                MCRYPT_MODE_ECB,
-                mcrypt_create_iv(
-                  mcrypt_get_iv_size(
-                    MCRYPT_RIJNDAEL_256,
-                    MCRYPT_MODE_ECB
-                  ),
-                  MCRYPT_RAND
-                )
-              )
-            )
-          );
+          return base64_encode(json_encode( $args ));
+//          return trim(
+//            base64_encode(
+//              mcrypt_encrypt(
+//                MCRYPT_RIJNDAEL_256,
+//                md5( $this->ecryption_key ),
+//                json_encode( $args ),
+//                MCRYPT_MODE_ECB/*,
+//                mcrypt_create_iv(
+//                  mcrypt_get_iv_size(
+//                    MCRYPT_RIJNDAEL_256,
+//                    MCRYPT_MODE_ECB
+//                  ),
+//                  MCRYPT_RAND
+//                )*/
+//              )
+//            )
+//          );
         }
 
         /**
@@ -384,23 +385,24 @@ namespace UsabilityDynamics {
          * @param type $args
          */
         private function _read_args( &$args ) {
-          $args = json_decode(
-            trim(
-              mcrypt_decrypt(
-                MCRYPT_RIJNDAEL_256,
-                md5( $this->secret_key ),
-                base64_decode($args[0]),
-                MCRYPT_MODE_ECB,
-                mcrypt_create_iv(
-                  mcrypt_get_iv_size(
-                    MCRYPT_RIJNDAEL_256,
-                    MCRYPT_MODE_ECB
-                  ),
-                  MCRYPT_RAND
-                )
-              )
-            )
-          );
+//          $args = json_decode(
+//            trim(
+//              mcrypt_decrypt(
+//                MCRYPT_RIJNDAEL_256,
+//                md5( $this->secret_key ),
+//                base64_decode($args[0]),
+//                MCRYPT_MODE_ECB/*,
+//                mcrypt_create_iv(
+//                  mcrypt_get_iv_size(
+//                    MCRYPT_RIJNDAEL_256,
+//                    MCRYPT_MODE_ECB
+//                  ),
+//                  MCRYPT_RAND
+//                )*/
+//              )
+//            )
+//          );
+          $args = json_decode(base64_decode($args[0]));
           if ( is_array( $args ) && !empty( $args ) ) {
             return true;
           }
