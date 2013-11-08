@@ -33,9 +33,15 @@ namespace UsabilityDynamics {
          * @param type $timeout
          * @author korotkov@ud
          */
-        function __construct($server, $secret_key, $public_key, $useragent = 'UD XML-RPC Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false) {
-          if ( empty( $secret_key ) || empty( $public_key ) ) return false;
+        function __construct($server, $secret_key = null, $public_key, $useragent = 'UD XML-RPC Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false) {
+          /**
+           * No go w/o PK
+           */
+          if ( empty( $public_key ) ) return false;
 
+          /**
+           * IMPORTANT
+           */
           parent::__construct( $server, $path, $port, $timeout );
 
           /**
@@ -46,7 +52,13 @@ namespace UsabilityDynamics {
           /**
            * Set Callback URL Header
            */
-          $headers['Callback-URL'] = get_bloginfo( 'pingback_url' );
+          $headers['X-Callback-URL'] = get_bloginfo( 'pingback_url' );
+
+          /**
+           * Encrypted or not
+           */
+          $encrypted = empty( $secret_key ) ? 'false' : 'true';
+          $headers['X-Payload-Encrypted'] = $encrypted;
 
           /**
            * Encryption key
@@ -74,7 +86,7 @@ namespace UsabilityDynamics {
          * Send a query to server
          * @return boolean
          */
-        private function _query() {
+        function query() {
 
           /**
            * All request args
@@ -326,7 +338,7 @@ namespace UsabilityDynamics {
           $call = $wp_xmlrpc_server->message->methodName;
           $pieces = explode(".", $call);
 
-          return $pieces[1];
+          return array_pop($pieces);
         }
 
         /**
