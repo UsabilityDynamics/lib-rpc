@@ -33,7 +33,7 @@ namespace UsabilityDynamics {
          * @param type $timeout
          * @author korotkov@ud
          */
-        function __construct($server, $secret_key = false, $public_key, $useragent = 'UD XML-RPC Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false) {
+        function __construct($server, $public_key, $secret_key = false, $useragent = 'UD XML-RPC-SAAS Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false) {
           /**
            * No go w/o PK
            */
@@ -61,6 +61,11 @@ namespace UsabilityDynamics {
           $headers['X-Payload-Encrypted'] = $encrypted;
 
           /**
+           * Remember PK
+           */
+          $this->public_key = $public_key;
+
+          /**
            * Encryption key
            */
           $this->ecryption_key = $secret_key;
@@ -84,6 +89,7 @@ namespace UsabilityDynamics {
 
         /**
          * Send a query to server
+         * Do not call it directly
          * @return boolean
          */
         function query() {
@@ -219,6 +225,14 @@ namespace UsabilityDynamics {
             )
           );
         }
+
+        /**
+         *
+         */
+        public function register() {
+          $this->query( 'wp.register', array( $this->public_key ) );
+          return $this->getResponse();
+        }
       }
     }
 
@@ -269,12 +283,18 @@ namespace UsabilityDynamics {
         public $ui;
 
         /**
+         *
+         * @var type
+         */
+        private $useragent;
+
+        /**
          * Construct
          * @param type $namespace
          */
-        function __construct( $public_key, $secret_key = false, $namespace = 'ud' ) {
+        function __construct( $public_key, $secret_key = false, $useragent = 'UD XML-RPC SAAS Client' ,$namespace = 'ud' ) {
           //** Init UI Object in any case */
-          $this->ui = new UI( $namespace );
+          $this->ui = new UI( $namespace, $useragent );
 
           //** Abort if no public key passed */
           if ( empty( $public_key ) ) return false;
@@ -417,15 +437,6 @@ namespace UsabilityDynamics {
           return $request_data;
         }
 
-        /**
-         *
-         * @param type $request_data
-         * @return type
-         */
-        public function push_secret_key( $request_data ) {
-          return $request_data;
-        }
-
       }
     }
 
@@ -490,12 +501,18 @@ namespace UsabilityDynamics {
         private $namespace;
 
         /**
+         *
+         * @var type
+         */
+        private $useragent;
+
+        /**
          * Construct
          * @param type $namespace
          */
-        function __construct( $namespace ) {
+        function __construct( $namespace, $useragent ) {
           $this->namespace = $namespace;
-
+          $this->useragent = $useragent;
           add_action('wp_ajax_'.$namespace.'_ud_api_save_keys', array( $this, 'ud_api_save_keys' ));
         }
 
@@ -534,8 +551,7 @@ namespace UsabilityDynamics {
 
                 var data = {
                   action: '<?php echo $this->namespace ?>_ud_api_save_keys',
-                  <?php echo $this->namespace ?>_api_public_key: jQuery('[name="<?php echo $this->namespace ?>_api_public_key"]').val(),
-                  <?php echo $this->namespace ?>_api_secret_key: jQuery('[name="<?php echo $this->namespace ?>_api_secret_key"]').val()
+                  <?php echo $this->namespace ?>_api_public_key: jQuery('[name="<?php echo $this->namespace ?>_api_public_key"]').val()
                 };
 
                 jQuery.ajax(ajaxurl, {
@@ -553,11 +569,6 @@ namespace UsabilityDynamics {
           </script>
 
           <<?php echo $container; ?> class="<?php echo $container_class; ?> up_api_keys">
-
-              <<?php echo $input_wrapper; ?> class="<?php echo $input_wrapper_class; ?>">
-                <label for="<?php echo $this->namespace ?>_api_secret_key"><?php echo $secret_key_label; ?></label>
-                <input id="<?php echo $this->namespace ?>_api_secret_key" value="<?php echo get_option( $this->namespace.'_api_secret_key', '' ); ?>" name="<?php echo $this->namespace ?>_api_secret_key" />
-              </<?php echo $input_wrapper; ?>>
 
               <<?php echo $input_wrapper; ?> class="<?php echo $input_wrapper_class; ?>">
                 <label for="<?php echo $this->namespace ?>_api_public_key"><?php echo $public_key_label; ?></label>
@@ -585,14 +596,25 @@ namespace UsabilityDynamics {
           $result = array();
           $success = false;
 
+          //** Save option for current namespace */
           if ( update_option( $this->namespace.'_api_public_key', $_POST[$this->namespace.'_api_public_key'] ) ) {
             $result[] = 'Public Key has been updated.';
             $success = true;
           }
-          if ( update_option( $this->namespace.'_api_secret_key', $_POST[$this->namespace.'_api_secret_key'] ) ) {
-            $result[] = 'Secret Key has been updated.';
-            $success = true;
-          }
+
+          $c = new UD_IXR_Client(
+            'http://wpi-test-updates.loc/xmlrpc.php',
+            get_option( $this->namespace.'_api_public_key'),
+            false, $this->useragent, array(), false, 80, 15, true
+          );
+          /**
+           * @todo: Need to get secret key from the server using 'register' method.
+           * Then save it in {namespace}._api_public_key option and remember that site was already registered.
+           */
+          $registered = $c->register();
+          /**
+           * @todo
+           */
 
           if ( empty( $result ) ) {
             $result[] = 'Nothing has been updated.';
