@@ -33,7 +33,7 @@ namespace UsabilityDynamics {
          * @param type $timeout
          * @author korotkov@ud
          */
-        function __construct($server, $secret_key = null, $public_key, $useragent = 'UD XML-RPC Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false) {
+        function __construct($server, $secret_key = false, $public_key, $useragent = 'UD XML-RPC Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false) {
           /**
            * No go w/o PK
            */
@@ -245,7 +245,7 @@ namespace UsabilityDynamics {
         protected $namespace;
 
         /**
-         *
+         * Root namespace for ALL methods. For WordPress is 'wp'.
          * @var type
          */
         protected $root_namespace = 'wp';
@@ -263,7 +263,7 @@ namespace UsabilityDynamics {
         protected $public_key;
 
         /**
-         *
+         * UI Object
          * @var type
          */
         public $ui;
@@ -272,23 +272,31 @@ namespace UsabilityDynamics {
          * Construct
          * @param type $namespace
          */
-        function __construct( $secret_key, $public_key, $namespace = 'ud' ) {
-          $this->ui         = new UI( $namespace );
+        function __construct( $public_key, $secret_key = false, $namespace = 'ud' ) {
+          //** Init UI Object in any case */
+          $this->ui = new UI( $namespace );
 
-          if ( empty( $secret_key ) || empty( $public_key ) ) return false;
+          //** Abort if no public key passed */
+          if ( empty( $public_key ) ) return false;
 
+          //** Set namespace */
           $this->namespace  = $namespace;
+
+          //** Set secret key */
           $this->secret_key = $secret_key;
+
+          //** Set public key */
           $this->public_key = $public_key;
 
+          //** Find all public methods in child classes and make them to be callable via XML-RPC */
           $reflector = new \ReflectionClass($this);
-
           foreach ($reflector->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
             if ($method->isUserDefined() && $method->getDeclaringClass()->name != get_class()) {
               $this->calls[] = $method;
             }
           }
 
+          //** Add methods to XML-RPC */
           add_filter('xmlrpc_methods', array($this, 'xmlrpc_methods'));
         }
 
@@ -299,7 +307,13 @@ namespace UsabilityDynamics {
          */
         public function xmlrpc_methods($methods) {
           foreach ($this->calls as $call) {
+            //** Check if need multiple namespaces */
             $namespace = $call->getDeclaringClass()->name != 'UsabilityDynamics\UD_XMLRPC' ? $this->namespace.'.' : '';
+
+            //** Skip if secret is not set for namespaced methods */
+            if ( empty( $this->secret_key ) && !empty( $namespace ) ) continue;
+
+            //** Register ALL to point to dispatch */
             $methods[$this->root_namespace.'.'.$namespace . $call->name] = array($this, "dispatch");
           }
           return $methods;
@@ -312,17 +326,21 @@ namespace UsabilityDynamics {
          * @return string
          */
         public function dispatch($args) {
-
+          //** Get method that is currently called */
           $call = $this->_get_called_method();
 
-          if (method_exists($this, $call)) {
+          //** Method should exist */
+          if ( method_exists( $this, $call ) ) {
+            //** Decrypt args and call real method */
             if ( $this->_read_args( $args ) ) {
-              $status = call_user_func_array(array($this, $call), array( $args ));
+              $status = call_user_func_array( array( $this, $call ), array( $args ) );
               return $status;
             } else {
+              //** If was not able to decrypt */
               return "Unauthorized";
             }
           } else {
+            //** If method not found */
             return "Method not allowed";
           }
         }
@@ -337,7 +355,7 @@ namespace UsabilityDynamics {
 
           $call = $wp_xmlrpc_server->message->methodName;
           $pieces = explode(".", $call);
-
+          //** Return last piece since there may be some namespaces */
           return array_pop($pieces);
         }
 
@@ -383,12 +401,11 @@ namespace UsabilityDynamics {
 
         /**
          * Validate all incoming requests using callback to this method.
-         *
          * @param md5 string $request_data
          * @return boolean
          */
         public function validate( $request_data ) {
-          if ( md5( $_SERVER['HTTP_HOST'].$this->public_key.$this->secret_key ) == $request_data[0] ) { return true; }
+          if ( md5( $_SERVER['HTTP_HOST'].$this->public_key ) == $request_data[0] ) { return true; }
           return false;
         }
 
@@ -397,6 +414,15 @@ namespace UsabilityDynamics {
          * @return mixed
          */
         public function test( $request_data ) {
+          return $request_data;
+        }
+
+        /**
+         *
+         * @param type $request_data
+         * @return type
+         */
+        public function push_secret_key( $request_data ) {
           return $request_data;
         }
 
