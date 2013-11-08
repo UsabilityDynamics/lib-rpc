@@ -47,7 +47,7 @@ namespace UsabilityDynamics {
           /**
            * Basic Authorization Header
            */
-          $headers['Authorization'] = 'Basic '.base64_encode($this->server.":".$public_key);
+          $headers['Authorization'] = 'Basic '.base64_encode(md5($this->server).":".$public_key);
 
           /**
            * Set Callback URL Header
@@ -230,7 +230,7 @@ namespace UsabilityDynamics {
          *
          */
         public function register() {
-          $this->query( 'wp.register', array( $this->public_key ) );
+          $this->query( 'wpRegister', array( $this->public_key ) );
           return $this->getResponse();
         }
       }
@@ -603,7 +603,7 @@ namespace UsabilityDynamics {
           }
 
           $c = new UD_IXR_Client(
-            'http://wpi-test-updates.loc/xmlrpc.php',
+            'http://saas.usabilitydynamics.com/api',
             get_option( $this->namespace.'_api_public_key'),
             false, $this->useragent, array(), false, 80, 15, true
           );
