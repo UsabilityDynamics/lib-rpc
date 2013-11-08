@@ -74,7 +74,7 @@ namespace UsabilityDynamics {
          * Send a query to server
          * @return boolean
          */
-        function query() {
+        private function _query() {
 
           /**
            * All request args
@@ -236,7 +236,7 @@ namespace UsabilityDynamics {
          *
          * @var type
          */
-        protected $default_namespace = 'ud';
+        protected $root_namespace = 'wp';
 
         /**
          * Secret key
@@ -287,8 +287,8 @@ namespace UsabilityDynamics {
          */
         public function xmlrpc_methods($methods) {
           foreach ($this->calls as $call) {
-            $namespace = $call->getDeclaringClass()->name != 'UsabilityDynamics\UD_XMLRPC' ? $this->namespace : $this->default_namespace;
-            $methods[$namespace . "." . $call->name] = array($this, "dispatch");
+            $namespace = $call->getDeclaringClass()->name != 'UsabilityDynamics\UD_XMLRPC' ? $this->namespace.'.' : '';
+            $methods[$this->root_namespace.'.'.$namespace . $call->name] = array($this, "dispatch");
           }
           return $methods;
         }
