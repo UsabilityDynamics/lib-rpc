@@ -47,7 +47,7 @@ namespace UsabilityDynamics {
           /**
            * Basic Authorization Header
            */
-          $headers['Authorization'] = 'Basic '.base64_encode($public_key);
+          $headers['Authorization'] = 'Basic '.base64_encode($this->server.":".$public_key);
 
           /**
            * Set Callback URL Header
