@@ -104,18 +104,9 @@ namespace UsabilityDynamics {
           $method = array_shift($args);
 
           /**
-           * Hash request data
-           */
-          $secure_args = array(
-            array(
-              $this->_hash_args($args[0])
-            )
-          );
-
-          /**
            * Build request
            */
-          $request = new \IXR_Request($method, $secure_args);
+          $request = new \IXR_Request($method, $args);
           $length = $request->getLength();
           $xml = $request->getXml();
           $r = "\r\n";
@@ -199,15 +190,6 @@ namespace UsabilityDynamics {
 
           return true;
         }
-
-        /**
-         * Secure arguments
-         * @param type $args
-         * @return type
-         */
-        private function _hash_args( $args ) {
-          return base64_encode(json_encode( $args ));
-        }
       }
     }
 
@@ -225,7 +207,7 @@ namespace UsabilityDynamics {
          * Initial handshake
          */
         public function register() {
-          $this->query( 'wpRegister' );
+          $this->query( 'wp.register' );
           return $this->getResponse();
         }
 
@@ -370,14 +352,7 @@ namespace UsabilityDynamics {
 
           //** Method should exist */
           if ( method_exists( $this, $call ) ) {
-            //** Decrypt args and call real method */
-            if ( $this->_read_args( $args ) ) {
-              $status = call_user_func_array( array( $this, $call ), array( $args ) );
-              return $status;
-            } else {
-              //** If was not able to decrypt */
-              return "Unauthorized";
-            }
+            return call_user_func_array( array( $this, $call ), array( $args ) );
           } else {
             //** If method not found */
             return "Method not allowed";
@@ -396,18 +371,6 @@ namespace UsabilityDynamics {
           $pieces = explode(".", $call);
           //** Return last piece since there may be some namespaces */
           return array_pop($pieces);
-        }
-
-        /**
-         * Decrypt args
-         * @param type $args
-         */
-        private function _read_args( &$args ) {
-          $args = json_decode(base64_decode($args[0]));
-          if ( is_array( $args ) ) {
-            return true;
-          }
-          return false;
         }
       }
     }
@@ -448,6 +411,10 @@ namespace UsabilityDynamics {
          * @return mixed
          */
         public function test( $request_data ) {
+          return $request_data;
+        }
+
+        public function register( $request_data ) {
           return $request_data;
         }
 
