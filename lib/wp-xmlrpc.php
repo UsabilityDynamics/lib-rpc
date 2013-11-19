@@ -47,7 +47,7 @@ namespace UsabilityDynamics {
           /**
            * Basic Authorization Header
            */
-          $headers['Authorization'] = 'Basic '.base64_encode(md5($_SERVER['HTTP_HOST']).":".$public_key.($secret_key?':'.$secret_key:''));
+          $headers['Authorization'] = 'Basic '.base64_encode(md5($_SERVER['HTTP_HOST']).":".$public_key);
 
           /**
            * Set Callback URL Header
@@ -58,6 +58,11 @@ namespace UsabilityDynamics {
            * Set Sourse host
            */
           $headers['X-Source-Host'] = $_SERVER['HTTP_HOST'];
+
+          /**
+           * Secret if is set
+           */
+          $headers['X-Secret'] = base64_encode( $secret_key?$secret_key:'' );
 
           /**
            * Remember PK
