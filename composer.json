@@ -2,12 +2,14 @@
   "name": "usabilitydynamics/wp-xmlrpc",
   "type": "library",
   "version": "0.0.1",
-  "description": "The best project ever.",
-  "require": {},
+  "description": "XML-RPC library.",
+  "require": {
+
+  },
   "repositories": [
     {
       "type": "composer",
-      "url": "http://udx.io"
+      "url": "http://packages.usabilitydynamics.com"
     }
   ],
   "minimum-stability": "dev",
@@ -26,9 +28,6 @@
       "dependencies": {},
       "scripts": [
         "./scripts"
-      ],
-      "templates": [
-        "./templates"
       ],
       "styles": [
         "./styles"
