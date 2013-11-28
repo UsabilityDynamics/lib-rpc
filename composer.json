@@ -1,15 +1,13 @@
 {
-  "name": "usabilitydynamics/wp-xmlrpc",
+  "name": "usabilitydynamics/lib-wp-xmlrpc",
   "type": "library",
   "version": "0.0.1",
   "description": "XML-RPC library.",
-  "require": {
-
-  },
+  "require": {},
   "repositories": [
     {
       "type": "composer",
-      "url": "http://packages.usabilitydynamics.com"
+      "url": "http://repository.usabilitydynamics.com"
     }
   ],
   "minimum-stability": "dev",
