@@ -19,7 +19,7 @@ namespace UsabilityDynamics {
     /**
      * Prevent class redeclaration since lib will be included into each product.
      */
-    if( !class_exists( 'UsabilityDynamics\UD_IXR_Client' ) ) {
+    if( !class_exists( 'UsabilityDynamics\UD_IXR_Client' ) && class_exists( '\IXR_Client' ) ) {
       /**
        * UD IXR extended from standard
        *
@@ -210,7 +210,7 @@ namespace UsabilityDynamics {
     /**
      * Prevent class redeclaration
      */
-    if( !class_exists( 'UsabilityDynamics\XMLRPC_CLIENT' ) ) {
+    if( !class_exists( 'UsabilityDynamics\XMLRPC_CLIENT' ) && class_exists( 'UsabilityDynamics\UD_IXR_Client' ) ) {
 
       /**
        * Client methods
@@ -410,7 +410,7 @@ namespace UsabilityDynamics {
     /**
      * Prevent class redeclaration
      */
-    if( !class_exists( 'UsabilityDynamics\UD_XMLRPC' ) ) {
+    if( !class_exists( 'UsabilityDynamics\UD_XMLRPC' ) && class_exists( 'UsabilityDynamics\XMLRPC' ) ) {
       /**
        * UD XML-RPC Server Library. May be extended with a class with public methods.
        *
@@ -464,7 +464,7 @@ namespace UsabilityDynamics {
     /**
      * Prevent class redeclaration
      */
-    if( !class_exists( 'UsabilityDynamics\UD_PRODUCTS_XMLRPC' ) ) {
+    if( !class_exists( 'UsabilityDynamics\UD_PRODUCTS_XMLRPC' ) && class_exists( 'UsabilityDynamics\UD_XMLRPC' ) ) {
       /**
        * WP UD Products should initialize this server to listen for incoming commands connected to premium features management
        */
