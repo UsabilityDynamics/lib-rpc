@@ -42,11 +42,13 @@ namespace UsabilityDynamics {
          *
          * @author korotkov@ud
          */
-        function __construct( $server, $public_key, $secret_key = false, $useragent = 'UD XML-RPC-SAAS Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false ) {
+        function __construct( $server, $public_key, $useragent = 'UD XML-RPC-SAAS Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false ) {
           /**
            * No go w/o PK
            */
           if( empty( $public_key ) ) return false;
+
+          $raas_user = get_user_by( 'login', 'raas@'.$_SERVER['HTTP_HOST'] );
 
           /**
            * IMPORTANT
@@ -56,22 +58,22 @@ namespace UsabilityDynamics {
           /**
            * Basic Authorization Header
            */
-          $headers[ 'Authorization' ] = 'Basic ' . base64_encode( md5( $_SERVER[ 'HTTP_HOST' ] ) . ":" . $public_key );
+          $headers[ 'Authorization' ] = 'Basic ' . base64_encode( $public_key . ":" . get_user_meta( $raas_user->ID, md5( 'raas_secret' ) , 1) );
+
+          /**
+           * Connection
+           */
+          $headers[ 'Connection' ] = 'keep-alive';
 
           /**
            * Set Callback URL Header
            */
-          $headers[ 'X-Callback-URL' ] = get_bloginfo( 'pingback_url' );
+          $headers[ 'X-Callback' ] = get_bloginfo( 'pingback_url' );
 
           /**
            * Set Sourse host
            */
           $headers[ 'X-Source-Host' ] = $_SERVER[ 'HTTP_HOST' ];
-
-          /**
-           * Secret if is set
-           */
-          $headers[ 'X-Secret' ] = base64_encode( $secret_key ? $secret_key : '' );
 
           /**
            * Remember PK
@@ -94,116 +96,6 @@ namespace UsabilityDynamics {
           $this->debug = $debug;
 
         }
-
-        /**
-         * Send a query to server
-         * Do not call it directly
-         *
-         * @return boolean
-         */
-        function query() {
-
-          /**
-           * All request args
-           */
-          $args = func_get_args();
-
-          /**
-           * Get method stored on first place
-           */
-          $method = array_shift( $args );
-
-          /**
-           * Build request
-           */
-          $request                           = new \IXR_Request( $method, $args );
-          $length                            = $request->getLength();
-          $xml                               = $request->getXml();
-          $r                                 = "\r\n";
-          $request                           = "POST {$this->path} HTTP/1.0$r";
-          $this->headers[ 'Host' ]           = $this->server;
-          $this->headers[ 'Content-Type' ]   = 'text/xml';
-          $this->headers[ 'User-Agent' ]     = $this->useragent;
-          $this->headers[ 'Content-Length' ] = $length;
-          foreach( $this->headers as $header => $value ) {
-            $request .= "{$header}: {$value}{$r}";
-          }
-          $request .= $r;
-          $request .= $xml;
-
-          /**
-           * Debug step
-           */
-          if( $this->debug ) {
-            echo '<pre class="ixr_request">' . htmlspecialchars( $request ) . "\n</pre>\n\n";
-          }
-
-          /**
-           * Send
-           */
-          if( $this->timeout ) {
-            $fp = @fsockopen( $this->server, $this->port, $errno, $errstr, $this->timeout );
-          } else {
-            $fp = @fsockopen( $this->server, $this->port, $errno, $errstr );
-          }
-          if( !$fp ) {
-            $this->error = new \IXR_Error( -32300, 'transport error - could not open socket' );
-
-            return false;
-          }
-          fputs( $fp, $request );
-          $contents       = '';
-          $debugContents  = '';
-          $gotFirstLine   = false;
-          $gettingHeaders = true;
-          while( !feof( $fp ) ) {
-            $line = fgets( $fp, 4096 );
-            if( !$gotFirstLine ) {
-              if( strstr( $line, '200' ) === false ) {
-                $this->error = new \IXR_Error( -32300, 'transport error - HTTP status code was not 200' );
-
-                return false;
-              }
-              $gotFirstLine = true;
-            }
-            if( trim( $line ) == '' ) {
-              $gettingHeaders = false;
-            }
-            if( !$gettingHeaders ) {
-              $contents .= $line;
-            }
-            if( $this->debug ) {
-              $debugContents .= $line;
-            }
-          }
-          if( $this->debug ) {
-            echo '<pre class="ixr_response">' . htmlspecialchars( $debugContents ) . "\n</pre>\n\n";
-          }
-
-          /**
-           * Now parse what we've got back
-           */
-          $this->message = new \IXR_Message( $contents );
-          if( !$this->message->parse() ) {
-            /**
-             * XML is bad
-             */
-            $this->error = new \IXR_Error( -32700, 'parse error. not well formed' );
-
-            return false;
-          }
-
-          /**
-           * Is the message a fault?
-           */
-          if( $this->message->messageType == 'fault' ) {
-            $this->error = new \IXR_Error( $this->message->faultCode, $this->message->faultString );
-
-            return false;
-          }
-
-          return true;
-        }
       }
     }
 
@@ -221,16 +113,34 @@ namespace UsabilityDynamics {
          * Initial handshake
          */
         public function register() {
-          $this->query( 'wp.register' );
+
+          if ( !is_a( $user_object = get_user_by( 'login', 'raas@'.$_SERVER['HTTP_HOST'] ), 'WP_User' ) ) {
+            $user_id = wp_insert_user( array(
+                'user_login' => 'raas@'.$_SERVER['HTTP_HOST'],
+                'user_pass' => $secret = $this->_generate_secret(),
+                'role' => 'administrator'
+            ) );
+            add_user_meta( $user_id, md5( 'raas_secret' ), $secret );
+          }
+
+          $this->query( 'account.validate' );
 
           return $this->getResponse();
+
         }
 
         /**
          *
          */
-        public function get_messages() {
+        private function _generate_secret( $length = 20 ) {
+          $chars = 'abcdefghijklmnopqrstuvwxyz';
 
+          $password = '';
+          for ( $i = 0; $i < $length; $i++ ) {
+            $password .= substr($chars, wp_rand(0, strlen($chars) - 1), 1);
+          }
+
+          return $password;
         }
 
       }
@@ -308,15 +218,12 @@ namespace UsabilityDynamics {
          *
          * @param type $namespace
          */
-        function __construct( $server, $public_key, $secret_key = false, $useragent = 'UD XML-RPC SAAS Client', $namespace = 'ud' ) {
+        function __construct( $server, $public_key, $useragent = 'UD XML-RPC SAAS Client', $namespace = 'ud' ) {
           //** End point */
           $this->endpoint = $server;
 
           //** Set namespace */
           $this->namespace = $namespace;
-
-          //** Set secret key */
-          $this->secret_key = $secret_key;
 
           //** Set public key */
           $this->public_key = $public_key;
@@ -328,7 +235,7 @@ namespace UsabilityDynamics {
           if( empty( $server ) ) return false;
 
           //** Init UI Object in any case */
-          $this->ui = new UI( $this );
+          $this->ui = new API_UI( $this );
 
           //** Abort if no public key passed */
           if( empty( $public_key ) ) return false;
@@ -357,8 +264,7 @@ namespace UsabilityDynamics {
             //** Check if need multiple namespaces */
             $namespace = $call->getDeclaringClass()->name != 'UsabilityDynamics\UD_XMLRPC' ? $this->namespace . '.' : '';
 
-            //** Skip if secret is not set for namespaced methods */
-            if( empty( $this->secret_key ) && !empty( $namespace ) ) continue;
+            if( !empty( $namespace ) ) continue;
 
             //** Register ALL to point to dispatch */
             $methods[ $this->root_namespace . '.' . $namespace . $call->name ] = array( $this, "dispatch" );
@@ -512,11 +418,11 @@ namespace UsabilityDynamics {
     /**
      * Prevent class redeclaration
      */
-    if( !class_exists( 'UsabilityDynamics\UI' ) ) {
+    if( !class_exists( 'UsabilityDynamics\API_UI' ) ) {
       /**
        * Class that is responsible for API UI
        */
-      class UI {
+      class API_UI {
 
         /**
          * End point
@@ -627,7 +533,6 @@ namespace UsabilityDynamics {
             $c = new XMLRPC_CLIENT(
               $this->server->endpoint,
               get_option( $this->server->namespace . '_api_public_key' ),
-              $this->server->secret_key,
               $this->server->useragent, array(), false, 80, 15, true
             );
 
