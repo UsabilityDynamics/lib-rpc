@@ -13,7 +13,7 @@
   "minimum-stability": "dev",
   "homepage": "http://github.com/UsabilityDynamics/lib-wp-xmlrpc",
   "autoload": {
-    "files": [
+    "classmap": [
       "lib/wp-xmlrpc.php"
     ]
   },
