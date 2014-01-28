@@ -32,7 +32,6 @@ namespace UsabilityDynamics {
          *
          * @param type                         $server
          * @param                              $public_key
-         * @param bool                         $secret_key
          * @param string                       $useragent
          * @param array                        $headers
          * @param bool|\UsabilityDynamics\type $path
@@ -40,6 +39,7 @@ namespace UsabilityDynamics {
          * @param int|\UsabilityDynamics\type  $timeout
          * @param bool                         $debug
          *
+         * @internal param bool $secret_key
          * @author korotkov@ud
          */
         function __construct( $server, $public_key, $useragent = 'UD XML-RPC-SAAS Client', $headers = array(), $path = false, $port = 80, $timeout = 15, $debug = false ) {

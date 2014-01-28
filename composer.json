@@ -1,5 +1,5 @@
 {
-  "name": "usabilitydynamics/lib-wp-xmlrpc",
+  "name": "usabilitydynamics/lib-wp-rpc",
   "type": "library",
   "version": "0.0.1",
   "description": "XML-RPC library.",
@@ -11,18 +11,15 @@
     }
   ],
   "minimum-stability": "dev",
-  "homepage": "http://github.com/UsabilityDynamics/lib-wp-xmlrpc",
   "autoload": {
-    "classmap": [
-      "lib/wp-xmlrpc.php"
-    ]
+    "classmap": [ "lib" ]
   },
   "extra": {
     "component": {
-      "name": "usabilitydynamics/lib-wp-xmlrpc",
+      "name": "usabilitydynamics/lib-wp-rpc",
       "version": "0.0.1",
       "description": "The best project ever.",
-      "homepage": "http://github.com/UsabilityDynamics/lib-wp-xmlrpc",
+      "homepage": "http://github.com/UsabilityDynamics/lib-wp-rpc",
       "dependencies": {},
       "scripts": [
         "./scripts"
@@ -35,9 +32,6 @@
       ],
       "license": "MIT"
     }
-  },
-  "support": {
-    "issues": "http://github.com/UsabilityDynamics/lib-wp-xmlrpc/issues"
   },
   "license": "MIT"
 }
