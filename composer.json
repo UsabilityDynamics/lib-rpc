@@ -1,5 +1,5 @@
 {
-  "name": "usabilitydynamics/lib-wp-rpc",
+  "name": "usabilitydynamics/lib-rpc",
   "type": "library",
   "version": "0.0.1",
   "description": "XML-RPC library.",
@@ -16,10 +16,10 @@
   },
   "extra": {
     "component": {
-      "name": "usabilitydynamics/lib-wp-rpc",
+      "name": "usabilitydynamics/lib-rpc",
       "version": "0.0.1",
       "description": "The best project ever.",
-      "homepage": "http://github.com/UsabilityDynamics/lib-wp-rpc",
+      "homepage": "http://github.com/UsabilityDynamics/lib-rpc",
       "dependencies": {},
       "scripts": [
         "./scripts"
