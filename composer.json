@@ -22,10 +22,10 @@
       "homepage": "http://github.com/UsabilityDynamics/lib-rpc",
       "dependencies": {},
       "scripts": [
-        "./scripts"
+        "./static/scripts"
       ],
       "styles": [
-        "./styles"
+        "./static/styles"
       ],
       "files": [
         "./lib"
