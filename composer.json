@@ -1,13 +1,13 @@
 {
-  "name": "usabilitydynamics/lib-rpc",
+  "name": "udx/lib-rpc",
   "type": "library",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "XML-RPC library.",
   "require": {},
   "repositories": [
     {
       "type": "composer",
-      "url": "http://repository.usabilitydynamics.com"
+      "url": "https://repository.usabilitydynamics.com"
     }
   ],
   "minimum-stability": "dev",
@@ -16,10 +16,10 @@
   },
   "extra": {
     "component": {
-      "name": "usabilitydynamics/lib-rpc",
+      "name": "udx/lib-rpc",
       "version": "0.0.1",
       "description": "The best project ever.",
-      "homepage": "http://github.com/UsabilityDynamics/lib-rpc",
+      "homepage": "https://github.com/udx/lib-rpc",
       "dependencies": {},
       "scripts": [
         "./static/scripts"
